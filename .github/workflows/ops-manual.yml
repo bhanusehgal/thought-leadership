@@ -1,0 +1,131 @@
+name: ops-manual
+
+on:
+  workflow_dispatch:
+    inputs:
+      command:
+        description: "Command to run"
+        required: true
+        type: choice
+        options:
+          - run_weekly
+          - approve
+          - publish
+          - publish_approved
+          - list_items
+      article_id:
+        description: "Article ID for approve/publish"
+        required: false
+        default: ""
+        type: string
+      count:
+        description: "Count for run_weekly"
+        required: false
+        default: "1"
+        type: string
+      state:
+        description: "State filter for list_items"
+        required: false
+        default: ""
+        type: string
+      dry_run:
+        description: "Use dry run for publish commands"
+        required: false
+        default: "true"
+        type: choice
+        options:
+          - "true"
+          - "false"
+      force_run:
+        description: "Bypass schedule window for run_weekly"
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "true"
+          - "false"
+
+jobs:
+  run-command:
+    runs-on: ubuntu-latest
+    env:
+      EMAIL_CAPTURE_URL: ${{ secrets.EMAIL_CAPTURE_URL }}
+      MEDIUM_SESSION_COOKIE: ${{ secrets.MEDIUM_SESSION_COOKIE }}
+      MEDIUM_EMAIL: ${{ secrets.MEDIUM_EMAIL }}
+      MEDIUM_PASSWORD: ${{ secrets.MEDIUM_PASSWORD }}
+      MERCURY_PARSER_API_KEY: ${{ secrets.MERCURY_PARSER_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -e .
+      - name: Install Playwright (publish commands only)
+        if: ${{ inputs.command == 'publish' || inputs.command == 'publish_approved' }}
+        run: python -m playwright install chromium
+      - name: Initialize DB
+        run: python -m agent.cli init-db
+      - name: Run command
+        shell: bash
+        run: |
+          mkdir -p artifacts/ops
+          {
+            echo "command=${{ inputs.command }}"
+            echo "article_id=${{ inputs.article_id }}"
+            echo "count=${{ inputs.count }}"
+            echo "state=${{ inputs.state }}"
+            echo "dry_run=${{ inputs.dry_run }}"
+            echo "force_run=${{ inputs.force_run }}"
+          } > artifacts/ops/request.txt
+
+          set -e
+          case "${{ inputs.command }}" in
+            run_weekly)
+              if [ "${{ inputs.force_run }}" = "true" ]; then
+                python -m agent.cli run-weekly --count "${{ inputs.count }}" --skip-url-check | tee artifacts/ops/command.log
+              else
+                python -m agent.cli run-weekly --count "${{ inputs.count }}" --respect-schedule --skip-url-check | tee artifacts/ops/command.log
+              fi
+              ;;
+            approve)
+              python -m agent.cli approve --id "${{ inputs.article_id }}" | tee artifacts/ops/command.log
+              ;;
+            publish)
+              if [ "${{ inputs.dry_run }}" = "true" ]; then
+                python -m agent.cli publish --id "${{ inputs.article_id }}" --dry-run | tee artifacts/ops/command.log
+              else
+                python -m agent.cli publish --id "${{ inputs.article_id }}" | tee artifacts/ops/command.log
+              fi
+              ;;
+            publish_approved)
+              if [ "${{ inputs.dry_run }}" = "true" ]; then
+                python -m agent.cli publish-approved --dry-run | tee artifacts/ops/command.log
+              else
+                python -m agent.cli publish-approved | tee artifacts/ops/command.log
+              fi
+              ;;
+            list_items)
+              if [ -n "${{ inputs.state }}" ]; then
+                python -m agent.cli list-items --state "${{ inputs.state }}" | tee artifacts/ops/list_items.json
+              else
+                python -m agent.cli list-items | tee artifacts/ops/list_items.json
+              fi
+              ;;
+            *)
+              echo "Unsupported command: ${{ inputs.command }}" >&2
+              exit 1
+              ;;
+          esac
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ops-manual-${{ github.run_number }}
+          path: |
+            artifacts/**
+            approvals/**
+            reviews/**

@@ -1,0 +1,27 @@
+domains:
+  - bis.org
+  - ecb.europa.eu
+  - fdic.gov
+  - fatf-gafi.org
+  - fca.org.uk
+  - federalreserve.gov
+  - fincen.gov
+  - imf.org
+  - oecd.org
+  - rbi.org.in
+  - sec.gov
+  - worldbank.org
+
+rss_feeds:
+  - https://www.federalreserve.gov/feeds/press_all.xml
+  - https://www.bis.org/list/press_releases.rss
+  - https://www.imf.org/en/News/RSS
+  - https://www.fincen.gov/news-room/news/rss.xml
+  - https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=0&mode=0
+
+tags_default:
+  - ALM
+  - AML
+  - Banking
+  - AI
+  - ModelRisk

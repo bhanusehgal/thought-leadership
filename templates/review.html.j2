@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Review {{ item.id }}</title>
+  <style>
+    :root {
+      --bg: #f4f6f8;
+      --card: #ffffff;
+      --ink: #1f2933;
+      --muted: #52606d;
+      --accent: #0f6cbd;
+      --ok: #137333;
+      --warn: #9a6700;
+      --bad: #b3261e;
+    }
+    body {
+      margin: 0;
+      background: radial-gradient(circle at top right, #dde9f7, var(--bg) 40%);
+      color: var(--ink);
+      font-family: "Source Serif 4", Georgia, serif;
+      line-height: 1.5;
+    }
+    .wrap {
+      max-width: 980px;
+      margin: 24px auto 56px;
+      padding: 0 16px;
+    }
+    .card {
+      background: var(--card);
+      border-radius: 14px;
+      box-shadow: 0 8px 28px rgba(15, 23, 42, 0.08);
+      padding: 22px;
+      margin-bottom: 16px;
+    }
+    h1, h2, h3 {
+      margin: 0 0 10px;
+      font-family: "IBM Plex Sans", Arial, sans-serif;
+    }
+    h1 { font-size: 28px; }
+    h2 { font-size: 21px; color: var(--accent); }
+    h3 { font-size: 17px; }
+    .meta {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+    .pill {
+      display: inline-block;
+      border: 1px solid #d1d5db;
+      border-radius: 20px;
+      padding: 3px 10px;
+      font-size: 12px;
+      margin-right: 6px;
+      margin-bottom: 6px;
+      font-family: "IBM Plex Sans", Arial, sans-serif;
+    }
+    .ok { color: var(--ok); }
+    .warn { color: var(--warn); }
+    .bad { color: var(--bad); }
+    pre {
+      background: #f8fafc;
+      border: 1px solid #dbe4ee;
+      border-radius: 8px;
+      padding: 12px;
+      white-space: pre-wrap;
+      font-size: 14px;
+    }
+    ul { margin: 8px 0 0 20px; }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="card">
+      <h1>Review Packet: {{ item.id }}</h1>
+      <p class="meta">State: {{ item.state }} | Created: {{ item.created_at }} | Updated: {{ item.updated_at }}</p>
+      <div>
+        {% for tag in item.tags %}
+        <span class="pill">{{ tag }}</span>
+        {% endfor %}
+      </div>
+      <h2>Primary Title</h2>
+      <p>{{ item.title }}</p>
+      <h2>Subtitle</h2>
+      <p>{{ item.subtitle }}</p>
+      <h2>TL;DR</h2>
+      <p>{{ item.tldr }}</p>
+    </section>
+
+    <section class="card">
+      <h2>All Title Options</h2>
+      <ul>
+      {% for title in item.title_options %}
+        <li>{{ title }}</li>
+      {% endfor %}
+      </ul>
+      <h2>Image Suggestions</h2>
+      <ul>
+      {% for image in item.image_suggestions %}
+        <li>{{ image }}</li>
+      {% endfor %}
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Article Body (Markdown)</h2>
+      <pre>{{ item.body_markdown }}</pre>
+    </section>
+
+    <section class="card">
+      <h2>Citations</h2>
+      <ul>
+      {% for c in item.citations %}
+        <li><a href="{{ c.url }}">{{ c.title }}</a> ({{ c.domain }})</li>
+      {% endfor %}
+      </ul>
+      <h2>Claims Verification Checklist</h2>
+      <ul>
+      {% for claim in item.claims_verification %}
+        <li>{{ claim.claim }} -> {{ claim.source_url }} ({{ claim.status }})</li>
+      {% endfor %}
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Flags</h2>
+      {% if item.flags %}
+        <ul>
+        {% for category, phrases in item.flags.items() %}
+          <li><strong>{{ category }}</strong>: {{ phrases | join(", ") }}</li>
+        {% endfor %}
+        </ul>
+        <p class="bad">Blocked for approval until rewrite clears all flags.</p>
+      {% else %}
+        <p class="ok">No blocking QA flags.</p>
+      {% endif %}
+      <h2>Checklist</h2>
+      <ul>
+        <li>{{ "PASS" if item.checklist.word_count else "FAIL" }} Word count 800-1200</li>
+        <li>{{ "PASS" if item.checklist.citations_allowlisted else "FAIL" }} Citations allowlisted</li>
+        <li>{{ "PASS" if item.checklist.title_count else "FAIL" }} Five title options</li>
+        <li>{{ "PASS" if item.checklist.tag_count else "FAIL" }} Five tags</li>
+        <li>{{ "PASS" if item.checklist.closing_line else "FAIL" }} Required closing sentence present</li>
+        <li>{{ "PASS" if item.checklist.sharp_reframes else "FAIL" }} 2-3 sharp reframes present</li>
+      </ul>
+    </section>
+  </main>
+</body>
+</html>

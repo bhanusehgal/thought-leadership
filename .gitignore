@@ -1,0 +1,15 @@
+__pycache__/
+.pytest_cache/
+.venv/
+*.pyc
+.DS_Store
+medium_authority_engine.egg-info/
+
+artifacts/*
+!artifacts/.gitkeep
+logs/*
+!logs/.gitkeep
+reviews/*
+!reviews/.gitkeep
+approvals/*
+!approvals/.gitkeep

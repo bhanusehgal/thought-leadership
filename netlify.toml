@@ -1,0 +1,16 @@
+[build]
+  publish = "dashboard"
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+
+[[redirects]]
+  from = "/api/trigger-workflow"
+  to = "/.netlify/functions/trigger-workflow"
+  status = 200
+
+[[redirects]]
+  from = "/api/list-runs"
+  to = "/.netlify/functions/list-runs"
+  status = 200

@@ -1,0 +1,54 @@
+topic_pillars:
+  - Asset Liability Management
+  - Interest rate impact on economy
+  - AML in US and India
+  - Transaction Instability Index
+  - AML + AI
+  - AI in Model Risk Management
+
+monthly_structure:
+  1: Technical deep dive
+  2: Failure analysis
+  3: Explainer (sharp + clear)
+  4: AI/future systems (grounded, not hype)
+
+predefined_roadmap:
+  Technical deep dive:
+    - title: "Liquidity Risk Is No Longer a Daily Metric: Transaction-Level Fragility in ALM"
+      pillar: "Asset Liability Management"
+      angle: "Why overnight averages mask intraday liquidity stress."
+      suggested_domains: ["bis.org", "federalreserve.gov", "imf.org"]
+    - title: "How Structuring Patterns Distort Liquidity Coverage Signals"
+      pillar: "AML in US and India"
+      angle: "When compliant transaction fragments still create liquidity risk."
+      suggested_domains: ["fincen.gov", "rbi.org.in", "fatf-gafi.org"]
+
+  Failure analysis:
+    - title: "Three Failure Modes in Legacy Liquidity Models During Fast-Moving Transaction Spikes"
+      pillar: "Transaction Instability Index"
+      angle: "Why static assumptions fail under fragmented digital flows."
+      suggested_domains: ["fdic.gov", "ecb.europa.eu", "bis.org"]
+    - title: "What AML Escalations Miss Between Periodic Reviews"
+      pillar: "AML + AI"
+      angle: "The blind spot between compliance checkpoints and real-time behavior."
+      suggested_domains: ["fincen.gov", "fca.org.uk", "rbi.org.in"]
+
+  Explainer (sharp + clear):
+    - title: "Transaction Instability Index Explained Without Math Theater"
+      pillar: "Transaction Instability Index"
+      angle: "A practical framing of instability propagation across the balance sheet."
+      suggested_domains: ["federalreserve.gov", "bis.org", "imf.org"]
+    - title: "AML Monitoring vs Liquidity Monitoring: Same Transactions, Different Risk Lens"
+      pillar: "AML in US and India"
+      angle: "Why separate functions see incomplete risk pictures."
+      suggested_domains: ["fincen.gov", "fatf-gafi.org", "rbi.org.in"]
+
+  AI/future systems (grounded, not hype):
+    - title: "AI in Model Risk Management: Controls Before Capability"
+      pillar: "AI in Model Risk Management"
+      angle: "Model governance patterns that reduce false confidence."
+      suggested_domains: ["federalreserve.gov", "sec.gov", "oecd.org"]
+    - title: "Designing AML + AI Systems That Surface Liquidity Signals Early"
+      pillar: "AML + AI"
+      angle: "Linking anomaly detection outputs to treasury decision windows."
+      suggested_domains: ["fincen.gov", "bis.org", "fca.org.uk"]

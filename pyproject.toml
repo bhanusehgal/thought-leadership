@@ -1,0 +1,31 @@
+[project]
+name = "medium-authority-engine"
+version = "0.1.0"
+description = "Concurrent Medium authority content engine with strict human approval."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "beautifulsoup4>=4.12.3",
+  "feedparser>=6.0.11",
+  "jinja2>=3.1.5",
+  "playwright>=1.51.0",
+  "pyyaml>=6.0.2",
+  "readability-lxml>=0.8.1",
+  "requests>=2.32.3"
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3.4"
+]
+
+[project.scripts]
+agent = "agent.cli:main"
+
+[build-system]
+requires = ["setuptools>=75.8.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["agent"]
+

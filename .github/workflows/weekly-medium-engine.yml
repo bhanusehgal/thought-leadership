@@ -1,0 +1,57 @@
+name: weekly-medium-engine
+
+on:
+  schedule:
+    - cron: "0 * * * *"
+  workflow_dispatch:
+    inputs:
+      force_run:
+        description: "Run generation/publish even outside Saturday 9PM ET window"
+        required: false
+        default: "false"
+
+jobs:
+  weekly-run:
+    runs-on: ubuntu-latest
+    env:
+      AGENT_PUBLISH_DRY_RUN: "false"
+      EMAIL_CAPTURE_URL: ${{ secrets.EMAIL_CAPTURE_URL }}
+      MEDIUM_SESSION_COOKIE: ${{ secrets.MEDIUM_SESSION_COOKIE }}
+      MEDIUM_EMAIL: ${{ secrets.MEDIUM_EMAIL }}
+      MEDIUM_PASSWORD: ${{ secrets.MEDIUM_PASSWORD }}
+      MERCURY_PARSER_API_KEY: ${{ secrets.MERCURY_PARSER_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -e .
+          python -m playwright install chromium
+      - name: Check schedule window (Saturday 9PM ET, DST-safe)
+        id: schedule
+        run: |
+          echo "run_window=$(python -c \"from agent.scheduler import should_run_weekly; print('true' if should_run_weekly() else 'false')\")" >> "$GITHUB_OUTPUT"
+      - name: Generate weekly draft
+        if: steps.schedule.outputs.run_window == 'true' || (github.event_name == 'workflow_dispatch' && github.event.inputs.force_run == 'true')
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ github.event.inputs.force_run }}" = "true" ]; then
+            agent run-weekly --count 1
+          else
+            agent run-weekly --count 1 --respect-schedule
+          fi
+      - name: Publish approved items
+        if: steps.schedule.outputs.run_window == 'true' || (github.event_name == 'workflow_dispatch' && github.event.inputs.force_run == 'true')
+        run: agent publish-approved
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: medium-engine-artifacts
+          path: |
+            artifacts/**
+            reviews/**
+            approvals/**

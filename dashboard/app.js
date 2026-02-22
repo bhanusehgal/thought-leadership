@@ -8,10 +8,15 @@ function status(msg, isError = false) {
 
 async function triggerWorkflow() {
   const command = document.getElementById("command").value;
+  const topic = document.getElementById("topic").value.trim();
+  const pillar = document.getElementById("pillar").value.trim();
+  const weekType = document.getElementById("weekType").value.trim();
+  const sourceUrls = document.getElementById("sourceUrls").value.trim();
   const articleId = document.getElementById("articleId").value.trim();
   const count = Number(document.getElementById("count").value || "1");
   const state = document.getElementById("state").value.trim();
   const dryRun = document.getElementById("dryRun").value === "true";
+  const skipUrlCheck = document.getElementById("skipUrlCheck").value === "true";
   const forceRun = document.getElementById("forceRun").value === "true";
   const dashboardKey = document.getElementById("dashboardKey").value.trim();
 
@@ -19,13 +24,22 @@ async function triggerWorkflow() {
     status("Article ID is required for approve/publish commands.", true);
     return;
   }
+  if (command === "run_topic" && !topic) {
+    status("Topic is required for run_topic.", true);
+    return;
+  }
 
   const payload = {
     command,
+    topic,
+    pillar,
+    week_type: weekType,
+    source_urls: sourceUrls,
     article_id: articleId,
     count,
     state,
     dry_run: dryRun,
+    skip_url_check: skipUrlCheck,
     force_run: forceRun,
   };
 

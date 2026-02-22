@@ -9,10 +9,31 @@ on:
         type: choice
         options:
           - run_weekly
+          - run_topic
           - approve
           - publish
           - publish_approved
           - list_items
+      topic:
+        description: "Topic for run_topic"
+        required: false
+        default: ""
+        type: string
+      pillar:
+        description: "Optional pillar override for run_topic"
+        required: false
+        default: ""
+        type: string
+      week_type:
+        description: "Optional week-type override for run_topic"
+        required: false
+        default: ""
+        type: string
+      source_urls:
+        description: "Optional comma-separated source URLs for run_topic"
+        required: false
+        default: ""
+        type: string
       article_id:
         description: "Article ID for approve/publish"
         required: false
@@ -38,6 +59,14 @@ on:
           - "false"
       force_run:
         description: "Bypass schedule window for run_weekly"
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "true"
+          - "false"
+      skip_url_check:
+        description: "Skip live citation URL reachability checks"
         required: false
         default: "false"
         type: choice
@@ -86,21 +115,56 @@ jobs:
           mkdir -p artifacts/ops
           {
             echo "command=${{ inputs.command }}"
+            echo "topic=${{ inputs.topic }}"
+            echo "pillar=${{ inputs.pillar }}"
+            echo "week_type=${{ inputs.week_type }}"
+            echo "source_urls=${{ inputs.source_urls }}"
             echo "article_id=${{ inputs.article_id }}"
             echo "count=${{ inputs.count }}"
             echo "state=${{ inputs.state }}"
             echo "dry_run=${{ inputs.dry_run }}"
             echo "force_run=${{ inputs.force_run }}"
+            echo "skip_url_check=${{ inputs.skip_url_check }}"
           } > artifacts/ops/request.txt
 
           set -e
           case "${{ inputs.command }}" in
             run_weekly)
-              if [ "${{ inputs.force_run }}" = "true" ]; then
-                python -m agent.cli run-weekly --count "${{ inputs.count }}" --skip-url-check | tee artifacts/ops/command.log
-              else
-                python -m agent.cli run-weekly --count "${{ inputs.count }}" --respect-schedule --skip-url-check | tee artifacts/ops/command.log
+              url_flag=""
+              if [ "${{ inputs.skip_url_check }}" = "true" ]; then
+                url_flag="--skip-url-check"
               fi
+              if [ "${{ inputs.force_run }}" = "true" ]; then
+                python -m agent.cli run-weekly --count "${{ inputs.count }}" $url_flag | tee artifacts/ops/command.log
+              else
+                python -m agent.cli run-weekly --count "${{ inputs.count }}" --respect-schedule $url_flag | tee artifacts/ops/command.log
+              fi
+              ;;
+            run_topic)
+              if [ -z "${{ inputs.topic }}" ]; then
+                echo "topic is required for run_topic" >&2
+                exit 1
+              fi
+              cmd=(python -m agent.cli run-topic --topic "${{ inputs.topic }}")
+              if [ "${{ inputs.skip_url_check }}" = "true" ]; then
+                cmd+=(--skip-url-check)
+              fi
+              if [ -n "${{ inputs.pillar }}" ]; then
+                cmd+=(--pillar "${{ inputs.pillar }}")
+              fi
+              if [ -n "${{ inputs.week_type }}" ]; then
+                cmd+=(--week-type "${{ inputs.week_type }}")
+              fi
+              if [ -n "${{ inputs.source_urls }}" ]; then
+                IFS=',' read -ra URLS <<< "${{ inputs.source_urls }}"
+                for u in "${URLS[@]}"; do
+                  trimmed="$(echo "$u" | xargs)"
+                  if [ -n "$trimmed" ]; then
+                    cmd+=(--source-url "$trimmed")
+                  fi
+                done
+              fi
+              "${cmd[@]}" | tee artifacts/ops/command.log
               ;;
             approve)
               python -m agent.cli approve --id "${{ inputs.article_id }}" | tee artifacts/ops/command.log

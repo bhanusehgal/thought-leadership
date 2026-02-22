@@ -8,6 +8,7 @@ import sys
 from .config import db_path, ensure_directories
 from .db import AgentDB
 from .pipeline import MediumAuthorityPipeline
+from .review_portal import build_review_portal
 from .review_renderer import render_review
 from .style_extractor import (
     analyze_text,
@@ -40,6 +41,19 @@ def cmd_run_weekly(args: argparse.Namespace) -> int:
     )
     for item in results:
         print(f"{item.status}: {item.article_id or '-'} :: {item.message}")
+    return 0
+
+
+def cmd_run_topic(args: argparse.Namespace) -> int:
+    pipeline = MediumAuthorityPipeline(_db())
+    result = pipeline.create_from_topic(
+        topic=args.topic,
+        pillar=args.pillar,
+        week_type=args.week_type,
+        source_urls=args.source_url or [],
+        check_urls=not args.skip_url_check,
+    )
+    print(f"{result.status}: {result.article_id or '-'} :: {result.message}")
     return 0
 
 
@@ -98,6 +112,14 @@ def cmd_render_review(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_build_review_hub(_: argparse.Namespace) -> int:
+    db = _db()
+    index_path, manifest_path = build_review_portal(db)
+    print(f"Review hub: {index_path}")
+    print(f"Manifest: {manifest_path}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Medium Authority Engine CLI")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -110,6 +132,14 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--respect-schedule", action="store_true")
     s.add_argument("--skip-url-check", action="store_true")
     s.set_defaults(func=cmd_run_weekly)
+
+    s = sub.add_parser("run-topic")
+    s.add_argument("--topic", required=True)
+    s.add_argument("--pillar", default=None)
+    s.add_argument("--week-type", default=None)
+    s.add_argument("--source-url", action="append", default=[])
+    s.add_argument("--skip-url-check", action="store_true")
+    s.set_defaults(func=cmd_run_topic)
 
     s = sub.add_parser("approve")
     s.add_argument("--id", required=True)
@@ -135,6 +165,9 @@ def build_parser() -> argparse.ArgumentParser:
     s = sub.add_parser("render-review")
     s.add_argument("--id", required=True)
     s.set_defaults(func=cmd_render_review)
+
+    s = sub.add_parser("build-review-hub")
+    s.set_defaults(func=cmd_build_review_hub)
 
     return parser
 

@@ -35,11 +35,13 @@ agent run-weekly
 ## Core commands
 - `agent init-db`
 - `agent run-weekly [--respect-schedule] [--count 1]`
+- `agent run-topic --topic "<topic>" [--pillar "<pillar>"] [--week-type "<week_type>"] [--source-url "<url>"]`
 - `agent approve --id <id>`
 - `agent publish --id <id> [--dry-run]`
 - `agent publish-approved`
 - `agent extract-style --url <medium-url>`
 - `agent list-items`
+- `agent build-review-hub`
 
 ## Human approval model
 Publishing is blocked unless both conditions are true:
@@ -50,6 +52,36 @@ Approve from CLI:
 ```bash
 agent approve --id <id>
 ```
+
+## Review hub (one URL + subpages)
+After reviews are generated:
+```bash
+agent build-review-hub
+```
+Open:
+- `http://127.0.0.1:8030/reviews/index.html` (hub)
+- `http://127.0.0.1:8030/reviews/<id>.html` (draft page with previous/next + back to hub)
+
+## Validation modes
+### Auto topic mode
+```bash
+agent run-weekly --count 1 --skip-url-check
+agent list-items --state READY_FOR_REVIEW
+```
+
+### User topic mode (research-backed)
+```bash
+agent run-topic \
+  --topic "How AML alert clusters can front-run liquidity stress in ALM" \
+  --pillar "AML + AI" \
+  --week-type "Explainer (sharp + clear)" \
+  --source-url "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260218a.htm" \
+  --source-url "https://www.bis.org"
+
+agent list-items --state READY_FOR_REVIEW
+```
+
+Then open the review hub, approve, and publish (dry-run first).
 
 ## Required environment variables for publishing
 - `MEDIUM_SESSION_COOKIE` (recommended), or
@@ -95,7 +127,8 @@ Set Netlify environment variables:
 
 ### 4. Use the mobile panel
 - Open the Netlify URL.
-- Trigger operations from the panel (run weekly, approve, publish, list).
+- Trigger operations from the panel (`run_weekly`, `run_topic`, `approve`, `publish`, `list_items`).
+- Use `skip_url_check=false` when you want strict live URL reachability checks for citations.
 - Review run status links in the same panel.
 - Human approval is still enforced by `approvals/<id>.approved` and `APPROVED` state.
 

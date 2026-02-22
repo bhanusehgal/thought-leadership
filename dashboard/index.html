@@ -140,11 +140,30 @@
           Command
           <select id="command">
             <option value="run_weekly">run_weekly</option>
+            <option value="run_topic">run_topic</option>
             <option value="approve">approve</option>
             <option value="publish">publish</option>
             <option value="publish_approved">publish_approved</option>
             <option value="list_items">list_items</option>
           </select>
+        </label>
+        <label>
+          Topic (required for run_topic)
+          <input id="topic" type="text" placeholder="How AML alerts can surface liquidity stress early" />
+        </label>
+        <div class="row">
+          <label>
+            Pillar (optional)
+            <input id="pillar" type="text" placeholder="AML + AI" />
+          </label>
+          <label>
+            Week type (optional)
+            <input id="weekType" type="text" placeholder="Explainer (sharp + clear)" />
+          </label>
+        </div>
+        <label>
+          Source URLs (optional, comma-separated)
+          <input id="sourceUrls" type="text" placeholder="https://federalreserve.gov/..., https://bis.org/..." />
         </label>
         <label>
           Article ID (required for approve/publish)
@@ -172,6 +191,15 @@
               <option value="false">false</option>
             </select>
           </label>
+          <label>
+            Skip URL checks
+            <select id="skipUrlCheck">
+              <option value="false">false</option>
+              <option value="true">true</option>
+            </select>
+          </label>
+        </div>
+        <div class="row">
           <label>
             Force schedule bypass (run_weekly)
             <select id="forceRun">

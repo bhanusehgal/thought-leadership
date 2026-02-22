@@ -44,15 +44,23 @@ exports.handler = async (event) => {
   }
 
   const command = String(payload.command || "").trim();
+  const topic = String(payload.topic || "").trim();
+  const pillar = String(payload.pillar || "").trim();
+  const weekType = String(payload.week_type || "").trim();
+  const sourceUrls = String(payload.source_urls || "").trim();
   const articleId = String(payload.article_id || "").trim();
   const state = String(payload.state || "").trim();
   const count = Number(payload.count || 1);
   const dryRun = Boolean(payload.dry_run);
   const forceRun = Boolean(payload.force_run);
+  const skipUrlCheck = Boolean(payload.skip_url_check);
 
-  const allowed = new Set(["run_weekly", "approve", "publish", "publish_approved", "list_items"]);
+  const allowed = new Set(["run_weekly", "run_topic", "approve", "publish", "publish_approved", "list_items"]);
   if (!allowed.has(command)) {
     return { statusCode: 400, body: JSON.stringify({ error: "Invalid command." }) };
+  }
+  if (command === "run_topic" && !topic) {
+    return { statusCode: 400, body: JSON.stringify({ error: "topic required for run_topic." }) };
   }
   if ((command === "approve" || command === "publish") && !articleId) {
     return { statusCode: 400, body: JSON.stringify({ error: "article_id required." }) };
@@ -63,11 +71,16 @@ exports.handler = async (event) => {
     const url = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/actions/workflows/${cfg.workflow}/dispatches`;
     const inputs = {
       command,
+      topic,
+      pillar,
+      week_type: weekType,
+      source_urls: sourceUrls,
       article_id: articleId,
       count: String(Number.isFinite(count) ? Math.max(1, count) : 1),
       state,
       dry_run: dryRun ? "true" : "false",
       force_run: forceRun ? "true" : "false",
+      skip_url_check: skipUrlCheck ? "true" : "false",
     };
     const resp = await fetch(url, {
       method: "POST",

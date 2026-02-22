@@ -20,6 +20,7 @@ jobs:
       MEDIUM_EMAIL: ${{ secrets.MEDIUM_EMAIL }}
       MEDIUM_PASSWORD: ${{ secrets.MEDIUM_PASSWORD }}
       MERCURY_PARSER_API_KEY: ${{ secrets.MERCURY_PARSER_API_KEY }}
+      ENABLE_MEDIUM_PUBLISH: ${{ secrets.ENABLE_MEDIUM_PUBLISH }}
     steps:
       - uses: actions/checkout@v4
       - name: Restore persisted state
@@ -55,7 +56,7 @@ jobs:
             agent run-weekly --count 1 --respect-schedule
           fi
       - name: Publish approved items
-        if: steps.schedule.outputs.run_window == 'true' || (github.event_name == 'workflow_dispatch' && github.event.inputs.force_run == 'true')
+        if: (steps.schedule.outputs.run_window == 'true' || (github.event_name == 'workflow_dispatch' && github.event.inputs.force_run == 'true')) && env.ENABLE_MEDIUM_PUBLISH == 'true' && (env.MEDIUM_SESSION_COOKIE != '' || (env.MEDIUM_EMAIL != '' && env.MEDIUM_PASSWORD != ''))
         run: agent publish-approved
       - name: Upload artifacts
         if: always()

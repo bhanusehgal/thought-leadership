@@ -83,6 +83,7 @@ jobs:
       MEDIUM_EMAIL: ${{ secrets.MEDIUM_EMAIL }}
       MEDIUM_PASSWORD: ${{ secrets.MEDIUM_PASSWORD }}
       MERCURY_PARSER_API_KEY: ${{ secrets.MERCURY_PARSER_API_KEY }}
+      ENABLE_MEDIUM_PUBLISH: ${{ secrets.ENABLE_MEDIUM_PUBLISH }}
     steps:
       - uses: actions/checkout@v4
       - name: Restore persisted state
@@ -170,6 +171,10 @@ jobs:
               python -m agent.cli approve --id "${{ inputs.article_id }}" | tee artifacts/ops/command.log
               ;;
             publish)
+              if [ "${ENABLE_MEDIUM_PUBLISH}" != "true" ]; then
+                echo "Publishing is disabled. Set ENABLE_MEDIUM_PUBLISH=true to enable final Medium publish." | tee artifacts/ops/command.log
+                exit 0
+              fi
               if [ "${{ inputs.dry_run }}" = "true" ]; then
                 python -m agent.cli publish --id "${{ inputs.article_id }}" --dry-run | tee artifacts/ops/command.log
               else
@@ -177,6 +182,10 @@ jobs:
               fi
               ;;
             publish_approved)
+              if [ "${ENABLE_MEDIUM_PUBLISH}" != "true" ]; then
+                echo "Publishing is disabled. Set ENABLE_MEDIUM_PUBLISH=true to enable final Medium publish." | tee artifacts/ops/command.log
+                exit 0
+              fi
               if [ "${{ inputs.dry_run }}" = "true" ]; then
                 python -m agent.cli publish-approved --dry-run | tee artifacts/ops/command.log
               else

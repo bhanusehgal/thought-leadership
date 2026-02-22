@@ -86,10 +86,14 @@ Then open the review hub, approve, and publish (dry-run first).
 ## Required environment variables for publishing
 - `MEDIUM_SESSION_COOKIE` (recommended), or
 - `MEDIUM_EMAIL` and `MEDIUM_PASSWORD`
+- `ENABLE_MEDIUM_PUBLISH=true` (feature toggle to allow final posting)
 
 Optional:
 - `EMAIL_CAPTURE_URL`
 - `MERCURY_PARSER_API_KEY`
+
+If Medium credentials are not configured, generation/review workflows still run and scheduled auto-publish is skipped.
+If `ENABLE_MEDIUM_PUBLISH` is not `true`, publish commands are blocked by design.
 
 ## GitHub + Netlify deployment (mobile access)
 This repo includes a lightweight web control panel (`dashboard/`) plus Netlify Functions that trigger GitHub Actions.
@@ -110,6 +114,7 @@ Set these in the GitHub repo:
 - `EMAIL_CAPTURE_URL` (optional)
 - `MEDIUM_SESSION_COOKIE` (preferred) or `MEDIUM_EMAIL` + `MEDIUM_PASSWORD`
 - `MERCURY_PARSER_API_KEY` (optional)
+- `ENABLE_MEDIUM_PUBLISH` (`false` initially, set to `true` later when ready)
 
 ### 3. Deploy to Netlify
 1. Create new Netlify site from this GitHub repo.
@@ -124,6 +129,7 @@ Set Netlify environment variables:
 - `GITHUB_BRANCH` (usually `main`)
 - `GITHUB_OPS_WORKFLOW_FILE` (`ops-manual.yml`)
 - `NETLIFY_DASHBOARD_KEY` (optional but recommended)
+- `ENABLE_MEDIUM_PUBLISH` (`false` initially)
 
 ### 4. Use the mobile panel
 - Open the Netlify URL.

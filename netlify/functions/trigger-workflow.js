@@ -28,6 +28,10 @@ function githubConfig() {
   return { token, owner, repo, workflow, branch };
 }
 
+function publishEnabled() {
+  return String(process.env.ENABLE_MEDIUM_PUBLISH || "false").toLowerCase() === "true";
+}
+
 exports.handler = async (event) => {
   if (event.httpMethod !== "POST") {
     return { statusCode: 405, body: "Method Not Allowed" };
@@ -64,6 +68,14 @@ exports.handler = async (event) => {
   }
   if ((command === "approve" || command === "publish") && !articleId) {
     return { statusCode: 400, body: JSON.stringify({ error: "article_id required." }) };
+  }
+  if ((command === "publish" || command === "publish_approved") && !publishEnabled()) {
+    return {
+      statusCode: 403,
+      body: JSON.stringify({
+        error: "Publishing is disabled in this deployment. Set ENABLE_MEDIUM_PUBLISH=true to enable.",
+      }),
+    };
   }
 
   try {

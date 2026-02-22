@@ -61,6 +61,7 @@ Optional:
 
 ## GitHub + Netlify deployment (mobile access)
 This repo includes a lightweight web control panel (`dashboard/`) plus Netlify Functions that trigger GitHub Actions.
+State (`artifacts/agent.db`, approvals, reviews) is restored across GitHub runs via Actions cache.
 
 ### 1. Push to GitHub
 ```bash

@@ -22,6 +22,17 @@ jobs:
       MERCURY_PARSER_API_KEY: ${{ secrets.MERCURY_PARSER_API_KEY }}
     steps:
       - uses: actions/checkout@v4
+      - name: Restore persisted state
+        uses: actions/cache@v4
+        with:
+          path: |
+            artifacts
+            approvals
+            reviews
+          key: medium-agent-state-${{ github.ref_name }}-${{ github.run_id }}
+          restore-keys: |
+            medium-agent-state-${{ github.ref_name }}-
+            medium-agent-state-
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
